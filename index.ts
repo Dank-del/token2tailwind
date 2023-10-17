@@ -62,7 +62,7 @@ semanticColors.forEach((collection) => {
                     ...tailwindConfig.theme.extend.colors,
                     [colorName]: colorValue,
                 };
-                semanticMap.set(colorName, colorValue);
+                semanticMap.set(variable.name, colorValue);
             }
         });
     });
@@ -73,7 +73,8 @@ componentColors.forEach((collection) => {
         mode.variables.forEach((variable) => {
             if (variable.type === 'color') {
                 const colorName = variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase();
-                const colorValue = typeof variable.value === 'string' ? variable.value : variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase();
+                // @ts-ignore
+                const colorValue = typeof variable.value === 'string' ? variable.value : semanticMap.get(variable.value.name);
                 // console.log(colorValue)
                 tailwindConfig.theme.extend.colors = {
                     ...tailwindConfig.theme.extend.colors,
