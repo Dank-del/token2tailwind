@@ -1,9 +1,7 @@
-const fs = require('fs');
+import fs from 'fs'
+import { FigmaToken } from './types';
+const figmaToken = JSON.parse(fs.readFileSync('variables.json', 'utf-8')) as FigmaToken;
 
-// Load your JSON data from a file (assuming the JSON is stored in 'variables.json')
-const figmaTokenData = require('./variables.json');
-
-// Define the Tailwind CSS configuration based on your schema
 const tailwindConfig = {
     purge: [],
     darkMode: false,
@@ -16,21 +14,20 @@ const tailwindConfig = {
     plugins: [],
 };
 
-// Map the JSON data to Tailwind CSS configuration
-figmaTokenData.collections.forEach((collection) => {
-    const colorMap = {};
+figmaToken.collections.forEach((collection) => {
+    const colorMap = new Map<string, any>();
     if (collection.name === 'Primitives ( Colors )') {
         collection.modes.forEach((mode) => {
             mode.variables.forEach((variable) => {
                 if (variable.type === 'color') {
                     // console.log(variable.name)
-                    const colorName = variable.name.replace(/\//g, '-').toLowerCase()
+                    const colorName = variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase()
                     const colorValue = variable.value;
                     tailwindConfig.theme.extend.colors = {
                         ...tailwindConfig.theme.extend.colors,
                         [colorName]: colorValue,
                     };
-                    colorMap[colorName] = colorValue;
+                    colorMap.set(colorName, colorValue);
                 }
             });
         });
@@ -43,7 +40,7 @@ figmaTokenData.collections.forEach((collection) => {
                     // console.log(variable.name)
                     const colorName = variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase();
                     // if variable.value is a string, use it as a color name to map to the colorMap, else use variable.value.name
-                    const colorValue = typeof variable.value === 'string' ? variable.value : variable.value.name.replace(/\//g, '-').toLowerCase();
+                    const colorValue = typeof variable.value === 'string' ? variable.value : variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase();
                     // console.log(colorValue)
                     tailwindConfig.theme.extend.colors = {
                         ...tailwindConfig.theme.extend.colors,
@@ -60,7 +57,7 @@ figmaTokenData.collections.forEach((collection) => {
             mode.variables.forEach((variable) => {
                 if (variable.type === 'color') {
                     const colorName = variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase();
-                    const colorValue = typeof variable.value === 'string' ? variable.value : variable.value.name.replace(/\//g, '-').toLowerCase();
+                    const colorValue = typeof variable.value === 'string' ? variable.value : variable.name.split("/")[variable.name.split("/").length - 1].toLowerCase();
                     console.log(colorValue)
                     tailwindConfig.theme.extend.colors = {
                         ...tailwindConfig.theme.extend.colors,
@@ -77,6 +74,10 @@ figmaTokenData.collections.forEach((collection) => {
 const tailwindConfigFile = 'module.exports = ' + JSON.stringify(tailwindConfig, null, 2);
 
 // Write the configuration to 'tailwind.config.js'
-fs.writeFileSync('tailwind.config.js', tailwindConfigFile, 'utf-8');
+fs.writeFileSync('generated/tailwind.config.js', tailwindConfigFile, 'utf-8');
 
 console.log('tailwind.config.js generated successfully.');
+
+
+
+console.log(figmaToken);
